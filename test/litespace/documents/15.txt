@@ -1,0 +1,79 @@
+A B O U T
+Experienced full-stack developer with strong technical and communication skills, adept at
+collaborating with clients and technical teams to deliver customer-centric solutions. Proven track
+record in delivering technical support and custom solutions, with the ability to translate technical
+concepts into actionable insights for non-technical stakeholders. 
+Phone 514-229-9966 
+E m a i l :  c a itlinanneg@gmail.com
+L i n k e d i n
+Insurance Quote PDF Text Extractor 
+Strong communication skills, fully bilingual in English and French
+Proven ability to adapt to new technologies and processes in a fast-paced environment to deliver client-facing solutions
+Languages: Javascript, HTML, CSS, Ruby
+Frameworks, Libraries & Environments: Node, React, jQuery, Express, SASS, Typescript, S
+uitescript, Boomi
+Systems and Databases: SQL, MongoDB, Git
+Testing: Cypress, Storybook, Capybara
+Autodesk (Contracted by LEEROY) | June 2021-January 2022
+Lighthouse Labs Feb - April 2021
+Full Stack Web Development - Diploma
+Concordia - Sept 2016-2018
+C o m p l e ted 1st and 2nd year - Computer Science
+Phone 514-229-9966 
+Travel and Languages - Visited 7 countries in the last year, and learning Spanish
+Logic puzzle enthusiast - Sudoku, daily NYT games, puzzles, and strategy board games
+Textile arts - Design and make my own dresses for events, making stuffed animals for children, and other gifts
+Sports and activities - Hiking, roller derby, hot yoga, volleyball
+Concordia - Sept 2016-2018
+Completed 1st and 2nd year - Computer
+Science
+E x p e r i e n ced full-stack developer with strong technical and communication skills, adept at collaborating with clients and technical teams to deliver customer-centric solutions. Proven track record in delivering technical support and custom solutions, with the ability to translate technical concepts into actionable insights for non-technical stakeholders. 
+Seeking to leverage my software de
+velopment experience and passion for solving customer problems as part of a dynamic team.
+Proven ability to adapt to new
+technologies and processes in a fast-
+paced environment to deliver client-
+facing solutions
+SOFTWARE DEVELOPER & SCRUM MASTER
+Zensurance | July 2022-Oct 2024
+Led agile ceremonies and participate
+d in sprints, prioritizing customer-focused feature development and technical problem-solving to enhance user satisfaction.
+Improved product functionality with scalable code, ensuring optimal performance across business units to meet customer needs.
+T o o k  a n  a c t i v e  r o l e in educational sessions for the team on new technologies and coding best practices, improving overall team proficiency and product quality
+Served 
+as a technical liaison, facilitating effective communication between stakeholders and the development team to identify and resolve customer-identified issues promptly
+SOLUTIONS ENGINEER 
+GURUS Solutions | January 2022-July 202
+2
+Designed and implemented custom solut
+ions for cloud-based applications,
+ focusing on efficiency and consistency to meet diverse client needs
+Led client discovery calls to gather d
+etailed technical requirements, and translate these into actionable designs for development
+R e g u l a r l y  p r e s e n t e d solutions to clients, ensuring client satisfaction
+Managed multiple projects, demonstrating an ability to adapt quickly to new processes in a fast-paced environment
+Actively participated in troubleshooting sessions, applying front-end and back-end expertise to resolve technical issues 
+DIGITAL ECOMMERCE RETENTION COORDINATOR & FRONT END PUBLISHER
+Autodesk (Contracted by LEEROY) | June 2021-January 2022
+Developed and published customer engagement materials, ensuring all content was acces
+sible and aligned with brand standards
+Collaborated with stakeholders to communicate initiative updates and gather valuabl
+e feedback, fostering strong relationships and alignment with client needs
+Conducted A/B testing and utilized analytical skills to enhance email campaign strategies, directly impacting customer retention and sales
+MANAGER/MIT - Fairview Pointe-Claire and Montreal Eaton Center
+Lush Fresh Handmade Cosmetics | Nov 2014-Feb 2021
+Analyzed sales data and KPIs to create action plans that enhance customer engagemen
+t and satisfaction
+Managed inventory implementing loss prevention strategies to reduce waste and improve the customer experience
+Recruited and trained a team by designing personalized development plans an
+d focusing on supporting continuous professional development
+Coached the team to deliver exceptional customer service, boosting overall custome
+r satisfaction and loyalty
+SOFTWARE DEVELOPER & SCRUM MASTER
+Insurance Quote PDF Text Extractor 
+Developed an API-driven solution to automate external insurance quote extractio
+n, reducing client processing time and improving the efficiency of customer interactions  
+Stack: NestJS, Amazon Textract, Amazon S3
+Interview Scheduler
+A single page application using React in which users are able to book, edit
+, and cancel interviews based around daily availability
