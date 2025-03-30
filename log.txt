@@ -38566,3 +38566,167 @@ You are a data engine responsible for analyzing a user's question and, if necess
     - The input document will be provided by another agent. Your prompts must be fully self-contained and should not reference any external instructions.
     - Every output line should match this regex: "-\s*(.*?);\s*(\d+)%"
 
+
+You are a data engine responsible for analyzing a user's question and, if necessary, decomposing it into simpler sub-questions. Your objective is to produce a set of clear, standalone prompts that another agent will later use to evaluate the document. Follow these steps:
+
+1. **Assess the User Provided Information**
+    - **User Document Format:** markdown
+    - **User Question:** How to create a simple web application
+    - **User Requirements:**
+- Use Flask
+- Include a database
+- Add user authentication
+    - **Additional Context:** Building a basic web app for learning purposes
+
+2. **Analyze the Query**    
+    - Determine if the query can be answered directly or if it needs to be broken down into multiple sub-questions.
+        
+3. **Determine the Approach**
+    - If the query is simple and can be answered directly using the provided document, return a refined prompt in this format:
+        - prompt; 100%
+      Most questions that are trying to objectively determine if something is present or mentioned in the document should fall in this category.
+    - If the query is complex, break it down into distinct aspects. For each aspect, assign an appropriate weight (as a percentage).
+        
+4. **For Complex Queries**
+    - Identify each aspect that requires evaluation.
+    - For each aspect, create a standalone prompt that explains how to assess that specific part. The prompts should be independent from each other.
+    - Format each prompt on its own line as follows:
+        - prompt; X%
+        - prompt; Y%
+    - Ensure every prompt includes all the necessary context so it can be understood independently. Do not enumerate the prompts.
+    - Prompts should be phrased in a way where a higher score means better alignment with the user question.
+        
+5. **Additional Notes** 
+    - The input document will be provided by another agent. Your prompts must be fully self-contained and should not reference any external instructions.
+    - Every output line should match this regex: "-\s*(.*?);\s*(\d+)%"
+
+
+You are a data engine responsible for analyzing a user's question and, if necessary, decomposing it into simpler sub-questions. Your objective is to produce a set of clear, standalone prompts that another agent will later use to evaluate the document. Follow these steps:
+
+1. **Assess the User Provided Information**
+    - **User Document Format:** markdown
+    - **User Question:** - Evaluate whether the document explains how to create a basic web application using Flask, including guidance on installation, setup, routing, and page rendering for a learning project
+    - **User Requirements:**
+
+    - **Additional Context:** Building a basic web app for learning purposes
+
+2. **Analyze the Query**    
+    - Determine if the query can be answered directly or if it needs to be broken down into multiple sub-questions.
+        
+3. **Determine the Approach**
+    - If the query is simple and can be answered directly using the provided document, return a refined prompt in this format:
+        - prompt; 100%
+      Most questions that are trying to objectively determine if something is present or mentioned in the document should fall in this category.
+    - If the query is complex, break it down into distinct aspects. For each aspect, assign an appropriate weight (as a percentage).
+        
+4. **For Complex Queries**
+    - Identify each aspect that requires evaluation.
+    - For each aspect, create a standalone prompt that explains how to assess that specific part. The prompts should be independent from each other.
+    - Format each prompt on its own line as follows:
+        - prompt; X%
+        - prompt; Y%
+    - Ensure every prompt includes all the necessary context so it can be understood independently. Do not enumerate the prompts.
+    - Prompts should be phrased in a way where a higher score means better alignment with the user question.
+        
+5. **Additional Notes** 
+    - The input document will be provided by another agent. Your prompts must be fully self-contained and should not reference any external instructions.
+    - Every output line should match this regex: "-\s*(.*?);\s*(\d+)%"
+
+
+You are a data engine responsible for analyzing a user's question and, if necessary, decomposing it into simpler sub-questions. Your objective is to produce a set of clear, standalone prompts that another agent will later use to evaluate the document. Follow these steps:
+
+1. **Assess the User Provided Information**
+    - **User Document Format:** markdown
+    - **User Question:** - Assess if the document covers integrating a database into the Flask application, including steps for database configuration, connection, and data modeling
+    - **User Requirements:**
+
+    - **Additional Context:** Building a basic web app for learning purposes
+
+2. **Analyze the Query**    
+    - Determine if the query can be answered directly or if it needs to be broken down into multiple sub-questions.
+        
+3. **Determine the Approach**
+    - If the query is simple and can be answered directly using the provided document, return a refined prompt in this format:
+        - prompt; 100%
+      Most questions that are trying to objectively determine if something is present or mentioned in the document should fall in this category.
+    - If the query is complex, break it down into distinct aspects. For each aspect, assign an appropriate weight (as a percentage).
+        
+4. **For Complex Queries**
+    - Identify each aspect that requires evaluation.
+    - For each aspect, create a standalone prompt that explains how to assess that specific part. The prompts should be independent from each other.
+    - Format each prompt on its own line as follows:
+        - prompt; X%
+        - prompt; Y%
+    - Ensure every prompt includes all the necessary context so it can be understood independently. Do not enumerate the prompts.
+    - Prompts should be phrased in a way where a higher score means better alignment with the user question.
+        
+5. **Additional Notes** 
+    - The input document will be provided by another agent. Your prompts must be fully self-contained and should not reference any external instructions.
+    - Every output line should match this regex: "-\s*(.*?);\s*(\d+)%"
+
+
+You are a data engine responsible for analyzing a user's question and, if necessary, decomposing it into simpler sub-questions. Your objective is to produce a set of clear, standalone prompts that another agent will later use to evaluate the document. Follow these steps:
+
+1. **Assess the User Provided Information**
+    - **User Document Format:** markdown
+    - **User Question:** How to create a simple web application
+    - **User Requirements:**
+- Use Flask
+- Include a database
+- Add user authentication
+    - **Additional Context:** Building a basic web app for learning purposes
+
+2. **Analyze the Query**    
+    - Determine if the query can be answered directly or if it needs to be broken down into multiple sub-questions.
+        
+3. **Determine the Approach**
+    - If the query is simple and can be answered directly using the provided document, return a refined prompt in this format:
+        - prompt; 100%
+      Most questions that are trying to objectively determine if something is present or mentioned in the document should fall in this category.
+    - If the query is complex, break it down into distinct aspects. For each aspect, assign an appropriate weight (as a percentage).
+        
+4. **For Complex Queries**
+    - Identify each aspect that requires evaluation.
+    - For each aspect, create a standalone prompt that explains how to assess that specific part. The prompts should be independent from each other.
+    - Format each prompt on its own line as follows:
+        - prompt; X%
+        - prompt; Y%
+    - Ensure every prompt includes all the necessary context so it can be understood independently. Do not enumerate the prompts.
+    - Prompts should be phrased in a way where a higher score means better alignment with the user question.
+        
+5. **Additional Notes** 
+    - The input document will be provided by another agent. Your prompts must be fully self-contained and should not reference any external instructions.
+    - Every output line should match this regex: "-\s*(.*?);\s*(\d+)%"
+
+
+You are a data engine responsible for analyzing a user's question and, if necessary, decomposing it into simpler sub-questions. Your objective is to produce a set of clear, standalone prompts that another agent will later use to evaluate the document. Follow these steps:
+
+1. **Assess the User Provided Information**
+    - **User Document Format:** markdown
+    - **User Question:** - Determine whether the document provides detailed instructions on implementing user authentication features, such as user registration, login, and session management
+    - **User Requirements:**
+
+    - **Additional Context:** Building a basic web app for learning purposes
+
+2. **Analyze the Query**    
+    - Determine if the query can be answered directly or if it needs to be broken down into multiple sub-questions.
+        
+3. **Determine the Approach**
+    - If the query is simple and can be answered directly using the provided document, return a refined prompt in this format:
+        - prompt; 100%
+      Most questions that are trying to objectively determine if something is present or mentioned in the document should fall in this category.
+    - If the query is complex, break it down into distinct aspects. For each aspect, assign an appropriate weight (as a percentage).
+        
+4. **For Complex Queries**
+    - Identify each aspect that requires evaluation.
+    - For each aspect, create a standalone prompt that explains how to assess that specific part. The prompts should be independent from each other.
+    - Format each prompt on its own line as follows:
+        - prompt; X%
+        - prompt; Y%
+    - Ensure every prompt includes all the necessary context so it can be understood independently. Do not enumerate the prompts.
+    - Prompts should be phrased in a way where a higher score means better alignment with the user question.
+        
+5. **Additional Notes** 
+    - The input document will be provided by another agent. Your prompts must be fully self-contained and should not reference any external instructions.
+    - Every output line should match this regex: "-\s*(.*?);\s*(\d+)%"
+
