@@ -1,7 +1,11 @@
+import logging
 import asyncio
+from functools import partial
+import os
+from logging.handlers import RotatingFileHandler
 
 from utils import query_llm, query_llm_high
-from functools import partial
+from Logger import setup_logger
 
 
 # TODO: there needs to be a way to specify the expected return type, and to reiterat if it doesn't match.
@@ -15,19 +19,25 @@ class LLMAgent:
     """
 
     def __init__(self, model="o3-mini", env="prod"):
+        """Initializes the LLM agent with an empty conversation history."""
         self.history = []  # List to keep the conversation history as dicts
         self.model = model
         self.env = env
+        
+        # Set up logging
+        self.logger = setup_logger(
+            log_group_name=f'/spade/backend/llm_{env}',
+            log_stream_name=f'llm_prompts_{env}'
+        )
 
     def add_message(self, role: str, content: str):
         """Adds a message to the conversation history."""
         self.history.append({"role": role, "content": content})
 
     def log_prompt(self, prompt: str):
-        """Logs the user prompt to a local 'log.txt' file."""
+        """Logs the user prompt using the configured logger."""
         try:
-            with open("log.txt", "a") as log_file:
-                log_file.write(prompt + "\n")
+            self.logger.info(f"User Prompt: {prompt}")
         except Exception as e:
             print(f"Logging error: {e}")
 
@@ -102,3 +112,4 @@ class LLMAgent:
     def clear_history(self):
         """Clears the conversation history."""
         self.history = []
+

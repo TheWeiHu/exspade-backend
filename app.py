@@ -2,10 +2,12 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import asyncio
 import json
+import traceback
 
 from ExecutionPlanGenerator import ExecutionPlanGenerator
 from ExecutionPlan import ExecutionPlan
 from dotenv import load_dotenv
+from Logger import logger, log_request, log_error
 
 # Load environment variables
 load_dotenv()
@@ -19,6 +21,9 @@ def generate_plan():
         # Get data from request body
         data = request.get_json()
         
+        # Log the incoming request
+        log_request(logger, data)
+        
         # Validate required fields
         required_fields = [
             "user_doc_format",
@@ -26,7 +31,9 @@ def generate_plan():
         ]
         for field in required_fields:
             if not data.get(field):
-                return jsonify({"error": f"Missing required field: {field}"}), 400
+                error_msg = f"Missing required field: {field}"
+                log_error(logger, error_msg)
+                return jsonify({"error": error_msg}), 400
 
         # Create generator and process
         generator = ExecutionPlanGenerator(
@@ -43,9 +50,14 @@ def generate_plan():
         plan = ExecutionPlan(result)
         plan_string = ExecutionPlan.plan_to_string(plan.plan)
 
+        # Log successful response
+        log_request(logger, {"status": "success", "plan": plan_string})
         return jsonify({"plan": plan_string, "status": "success"})
 
     except Exception as e:
+        # Log the error with full traceback
+        error_msg = f"Error occurred: {str(e)}"
+        log_error(logger, error_msg, traceback.format_exc())
         return jsonify({"error": str(e), "status": "error"}), 500
 
 
