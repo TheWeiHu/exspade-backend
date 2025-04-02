@@ -7,15 +7,24 @@ import os
 
 
 def setup_logger(log_group_name="/spade/backend", log_stream_name="api-calls"):
-    """Set up a logger that writes to CloudWatch"""
+    """Set up a logger that writes to CloudWatch in prod, disabled otherwise"""
     logger = logging.getLogger("spade_backend")
+    
+    # Check if we're in production
+    is_prod = os.environ.get('ENVIRONMENT') == 'prod'
+    
+    if not is_prod:
+        # Disable logging completely in non-prod environments
+        logger.setLevel(logging.CRITICAL)
+        return logger
+
+    # Production logging setup
     logger.setLevel(logging.INFO)
     logger.handlers = []
 
-    # CloudWatch handler
     try:
         # Get region from environment variable or use default
-        region = os.environ.get('AWS_REGION', 'us-west-2')  # Default to us-west-2 if not set
+        region = os.environ.get('AWS_REGION', 'us-west-2')
         
         # Configure boto3 client with region
         boto3.setup_default_session(region_name=region)
@@ -50,7 +59,6 @@ def log_error(logger, error_msg, traceback_str=None):
 logger = setup_logger()
 
 if __name__ == "__main__":
-    # Test request logging
     test_data = {
         "user_doc_format": "test",
         "user_question": "test question",

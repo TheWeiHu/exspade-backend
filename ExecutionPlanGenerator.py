@@ -35,7 +35,7 @@ class ExecutionPlanGenerator:
         self.additional_context = additional_context
         self.max_depth = max_depth
 
-    async def process(self, depth=0):
+    async def process(self, model="o3-mini", depth=0):
         """
         Processes the prompt by calling generate_weighted_prompts with the current parameters,
         extracts the keys from the output, and recursively processes each key as a new question.
@@ -55,6 +55,7 @@ class ExecutionPlanGenerator:
             self.user_question,
             self.user_requirements,
             self.additional_context,
+            model
         )
 
         result = {}
@@ -74,7 +75,7 @@ class ExecutionPlanGenerator:
                     self.max_depth,
                 )
                 tasks[(key, weight)] = asyncio.create_task(
-                    new_generator.process(depth=depth + 1)
+                    new_generator.process(model, depth=depth + 1)
                 )
 
         # Await all asynchronous tasks concurrently
@@ -85,7 +86,7 @@ class ExecutionPlanGenerator:
 
 
 def generate_weighted_prompts(
-    user_document_format, user_question, user_requirements, additional_context
+    user_document_format, user_question, user_requirements, additional_context, model="o3-mini"
 ):
     """
     Generates a dictionary mapping evaluation prompts to their weights by querying an LLM.
@@ -109,7 +110,7 @@ def generate_weighted_prompts(
         user_document_format, user_question, user_requirements, additional_context
     )
 
-    agent = LLMAgent()
+    agent = LLMAgent(model=model)
     weights = agent.ask(prompt)
 
     n_attempts = 5

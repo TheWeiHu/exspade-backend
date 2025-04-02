@@ -153,10 +153,49 @@ class ExecutionPlan:
         # Map the results back to their respective leaf nodes.
         results = dict(zip(self.leaf_nodes.keys(), results_list))
         return results
+    
 
-    def modify_plan_through_user_feedback(self, feedback: str):
-        # NOTE: need to re-parse the plan, and then re-extract the leaf nodes.
-        pass
+    def modify_plan_through_user_feedback(self, feedback: str, model: str = "o3-mini"):
+        """
+        Updates the execution plan based on user feedback.
+
+        Args:
+            feedback (str): The user's feedback about how to modify the rubric
+
+        Raises:
+            Exception: If both attempts to generate a valid rubric fail
+        """
+        prompt = f"""
+        You are given a rubric structured as a tree along with user feedback. Update the rubric based on the following instructions:
+        1. Feel free to modify the rubric prompts to better align with the user feedback.
+        2. Try to coalesce duplicate prompts or prompts that are very similar.
+        3. Do not reduce the depth of the tree.
+        4. It is important when adjusting the weights that, in the end, the total weight of the leaves add up to 100%.
+        5. Try to not change the vocabulary and phrasing too aggressively, if not necessary.
+        
+        Return only the updated rubric in the same tree format without any additional annotations, formating, or explanations.
+
+        Rubric:
+        {ExecutionPlan.plan_to_string(self.plan)}
+
+        User Feedback:
+        {feedback}
+        """
+        agent = LLMAgent(model=model)
+        result = agent.ask(prompt)
+        n_attempts = 5
+        while n_attempts:
+            try:
+                self.plan = self._parse_plan(result)
+                self.leaf_nodes = self.extract_leaf_nodes()
+                print(f"Attempt {n_attempts} succeeded")
+                break
+            except Exception as e:
+                result = agent.ask(" The error was: {e}. The format is not right or the weight does not add up to 100%, re-attempt. Note: return only the final output, with no annotations")
+                n_attempts -= 1
+                if n_attempts == 0:
+                    print(result)
+                    raise Exception("Failed to parse plan after 5 attempts")
 
     @staticmethod
     def plan_to_string(tree, parent_weight=1, indent=""):
@@ -188,29 +227,73 @@ class ExecutionPlan:
                     )
         return result
 
+    def verify_weights(self, tolerance: float = 0.025) -> bool:
+        """
+        Verify that for each parent node, the sum of its children's weights equals the parent's weight within tolerance.
+        For leaf nodes, verify that their total sum is within tolerance of 1.
+        
+        Args:
+            tolerance (float): Maximum allowed difference from expected weight (default: 0.01)
+            
+        Returns:
+            bool: True if all weight relationships are valid within tolerance, False otherwise
+        """
+        def verify_subtree(tree, parent_weight: float = 1.0) -> bool:
+            if not tree:  # Leaf node
+                return True
+                
+            children_weights = []
+            for (_, weight), subtree in tree.items():
+                effective_weight = parent_weight * weight
+                children_weights.append(effective_weight)
+                if not verify_subtree(subtree, effective_weight):
+                    return False
+                    
+            if children_weights:  # If not a leaf node
+                total_children_weight = sum(children_weights)
+                if not math.isclose(total_children_weight, parent_weight, rel_tol=tolerance):
+                    return False
+            return True
+
+        # First verify the tree structure
+        if not verify_subtree(self.plan):
+            return False
+            
+        # Then verify total leaf weights sum to 1
+        total_leaf_weight = sum(self.leaf_nodes.values())
+        return math.isclose(total_leaf_weight, 1.0, rel_tol=tolerance)
+
 
 async def main():
     from pathlib import Path
 
-    EXAMPLE_PLAN = Path("./test/litespace/plan.txt").read_text()
-    EXAMPLE_DOCUMENTS = [
-        f.read_text()
-        for f in Path("./test/litespace/documents").iterdir()
-        if f.is_file()
-    ]
-
-    execution_plan = ExecutionPlan.from_plan_string(EXAMPLE_PLAN, EXAMPLE_DOCUMENTS)
-    original = execution_plan.plan
-
+    # Load test data
     execution_plan = ExecutionPlan.from_plan_string(
-        ExecutionPlan.plan_to_string(execution_plan.plan), EXAMPLE_DOCUMENTS
+        Path("./test/litespace/plan.txt").read_text(),
+        [f.read_text() for f in Path("./test/litespace/documents").iterdir() if f.is_file()]
     )
-    reparsed = execution_plan.plan
 
-    print(original == reparsed)
+    # Test plan string serialization/deserialization
+    plan_string = ExecutionPlan.plan_to_string(execution_plan.plan)
+    reparsed_plan = ExecutionPlan.from_plan_string(plan_string, execution_plan.documents).plan
+    print("Plan serialization works:", execution_plan.plan == reparsed_plan)
+    print("Initial weights valid:", execution_plan.verify_weights())
 
+    # Test plan execution
     results = await execution_plan.execute_plan()
     results.to_csv("./test/litespace/tmp.csv", index=False)
+
+    # Test weight modification
+    execution_plan.modify_plan_through_user_feedback(
+        "Please increase the weight of technical skills and decrease the weight of soft skills"
+    )
+    print("Weights still valid after modification:", execution_plan.verify_weights())
+    print(ExecutionPlan.plan_to_string(execution_plan.plan))
+    execution_plan.modify_plan_through_user_feedback(
+        "Don't weigh overqualification as much."
+    )
+    print("Weights still valid after modification:", execution_plan.verify_weights())
+    print(ExecutionPlan.plan_to_string(execution_plan.plan))
 
 
 if __name__ == "__main__":
