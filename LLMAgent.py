@@ -72,7 +72,7 @@ class LLMAgent:
         )
 
         # Query the LLM with retries
-        max_retries = 3
+        max_retries = 5
         retry_delay = 1  # Initial delay in seconds
 
         for attempt in range(max_retries):

@@ -12,10 +12,12 @@ after iterating on the execution plan using natural language, users can apply th
 import pandas as pd
 import math
 import asyncio
+from pathlib import Path
 
 
 from LLMAgent import LLMAgent
 from tqdm import tqdm
+from templates.prompts import create_scoring_prompt, create_feedback_prompt
 
 
 class ExecutionPlan:
@@ -131,13 +133,7 @@ class ExecutionPlan:
     async def _execute_plan_on_document(self, document: str, model: str):
         # TODO: need a way to sepecify the prior for the return distribution dynamically.
         async def process_leaf(leaf_node):
-            prompt = f"""{leaf_node}
-            ---
-            {document}
-            ---
-            Assign a score from 1 to 100 (with a mean of 75 and a standard deviation of 10).
-            Return just the score, with no additional annotations.
-            """
+            prompt = create_scoring_prompt(leaf_node, document)
             # Ensure that LLMAgent.ask is asynchronous
             return float(await LLMAgent(model=model).ask_async(prompt))
 
@@ -165,25 +161,10 @@ class ExecutionPlan:
         Raises:
             Exception: If both attempts to generate a valid rubric fail
         """
-        prompt = f"""
-        You are given a rubric structured as a tree along with user feedback. Update the rubric based on the following instructions:
-        1. Feel free to modify the rubric prompts to better align with the user feedback.
-        2. Try to coalesce duplicate prompts or prompts that are very similar.
-        3. Do not reduce the depth of the tree.
-        4. It is important when adjusting the weights that, in the end, the total weight of the leaves add up to 100%.
-        5. Try to not change the vocabulary and phrasing too aggressively, if not necessary.
-        
-        Return only the updated rubric in the same tree format without any additional annotations, formating, or explanations.
-
-        Rubric:
-        {ExecutionPlan.plan_to_string(self.plan)}
-
-        User Feedback:
-        {feedback}
-        """
+        prompt = create_feedback_prompt(ExecutionPlan.plan_to_string(self.plan), feedback)
         agent = LLMAgent(model=model)
         result = agent.ask(prompt)
-        n_attempts = 5
+        n_attempts = 3
         while n_attempts:
             try:
                 self.plan = self._parse_plan(result)
@@ -191,10 +172,10 @@ class ExecutionPlan:
                 print(f"Attempt {n_attempts} succeeded")
                 break
             except Exception as e:
-                result = agent.ask(" The error was: {e}. The format is not right or the weight does not add up to 100%, re-attempt. Note: return only the final output, with no annotations")
+                result = agent.ask(" The error was: {e}. The format is not right or the weight does not add up to 1.0, re-attempt. Note: return only the final output, with no annotations")
                 n_attempts -= 1
+                print(result)
                 if n_attempts == 0:
-                    print(result)
                     raise Exception("Failed to parse plan after 5 attempts")
 
     @staticmethod
@@ -265,35 +246,33 @@ class ExecutionPlan:
 
 
 async def main():
-    from pathlib import Path
-
     # Load test data
-    execution_plan = ExecutionPlan.from_plan_string(
-        Path("./test/litespace/plan.txt").read_text(),
-        [f.read_text() for f in Path("./test/litespace/documents").iterdir() if f.is_file()]
+    plan = ExecutionPlan(
+        Path("./test-data/litespace/plan.txt").read_text(),
+        [f.read_text() for f in Path("./test-data/litespace/documents").iterdir() if f.is_file()]
     )
 
     # Test plan string serialization/deserialization
-    plan_string = ExecutionPlan.plan_to_string(execution_plan.plan)
-    reparsed_plan = ExecutionPlan.from_plan_string(plan_string, execution_plan.documents).plan
-    print("Plan serialization works:", execution_plan.plan == reparsed_plan)
-    print("Initial weights valid:", execution_plan.verify_weights())
+    plan_string = ExecutionPlan.plan_to_string(plan.plan)
+    reparsed_plan = ExecutionPlan.from_plan_string(plan_string, plan.documents).plan
+    print("Plan serialization works:", plan.plan == reparsed_plan)
+    print("Initial weights valid:", plan.verify_weights())
 
     # Test plan execution
-    results = await execution_plan.execute_plan()
-    results.to_csv("./test/litespace/tmp.csv", index=False)
+    results = await plan.execute_plan()
+    results.to_csv("./test-data/litespace/tmp.csv", index=False)
 
     # Test weight modification
-    execution_plan.modify_plan_through_user_feedback(
+    plan.modify_plan_through_user_feedback(
         "Please increase the weight of technical skills and decrease the weight of soft skills"
     )
-    print("Weights still valid after modification:", execution_plan.verify_weights())
-    print(ExecutionPlan.plan_to_string(execution_plan.plan))
-    execution_plan.modify_plan_through_user_feedback(
+    print("Weights still valid after modification:", plan.verify_weights())
+    print(ExecutionPlan.plan_to_string(plan.plan))
+    plan.modify_plan_through_user_feedback(
         "Don't weigh overqualification as much."
     )
-    print("Weights still valid after modification:", execution_plan.verify_weights())
-    print(ExecutionPlan.plan_to_string(execution_plan.plan))
+    print("Weights still valid after modification:", plan.verify_weights())
+    print(ExecutionPlan.plan_to_string(plan.plan))
 
 
 if __name__ == "__main__":
