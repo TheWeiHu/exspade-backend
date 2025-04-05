@@ -7,7 +7,7 @@ import asyncio
 import re
 
 from ExecutionPlan import ExecutionPlan
-from LLMAgent import LLMAgent
+from llm_agent import AzureLLMAgent
 from templates.prompts import create_decomposition_prompt
 
 
@@ -36,7 +36,7 @@ class ExecutionPlanGenerator:
         self.additional_context = additional_context
         self.max_depth = max_depth
 
-    async def process(self, model="o3-mini", depth=0):
+    async def process(self, model="gpt-4", depth=0):
         """
         Processes the prompt by calling generate_weighted_prompts with the current parameters,
         extracts the keys from the output, and recursively processes each key as a new question.
@@ -51,7 +51,7 @@ class ExecutionPlanGenerator:
             return {}
 
         # Create the prompt for the current input
-        weight_dict = generate_weighted_prompts(
+        weight_dict = await generate_weighted_prompts(
             self.user_document_format,
             self.user_question,
             self.user_requirements,
@@ -86,8 +86,8 @@ class ExecutionPlanGenerator:
         return result
 
 
-def generate_weighted_prompts(
-    user_document_format, user_question, user_requirements, additional_context, model="o3-mini"
+async def generate_weighted_prompts(
+    user_document_format, user_question, user_requirements, additional_context, model="gpt-4"
 ):
     """
     Generates a dictionary mapping evaluation prompts to their weights by querying an LLM.
@@ -111,27 +111,27 @@ def generate_weighted_prompts(
         user_document_format, user_question, user_requirements, additional_context
     )
 
-    agent = LLMAgent(model=model)
-    weights = agent.ask(prompt)
+    async with AzureLLMAgent(model=model) as agent:
+        weights = await agent.ask(prompt)
 
-    n_attempts = 3
-    while n_attempts:
-        try:
-            weight_dict = parse_weighted_prompts(weights)
-            if sum(weight_dict.values()) == 1:
-                return weight_dict
-            else:
-                print(weights)
-                weights = agent.ask(
-                    "the weights do not sum to 1. note: return only the final output, with no annotations."
+        n_attempts = 3
+        while n_attempts:
+            try:
+                weight_dict = parse_weighted_prompts(weights)
+                if sum(weight_dict.values()) == 1:
+                    return weight_dict
+                else:
+                    print(weights)
+                    weights = await agent.ask(
+                        "the weights do not sum to 1. note: return only the final output, with no annotations."
+                    )
+            except Exception:
+                weights = await agent.ask(
+                    "the format is not right, re-attempt. note: return only the final output, with no annotations."
                 )
-        except Exception:
-            weights = agent.ask(
-                "the format is not right, re-attempt. note: return only the final output, with no annotations."
-            )
-            print(weights)
-            n_attempts -= 1
-    raise Exception
+                print(weights)
+                n_attempts -= 1
+        raise Exception
 
 
 def parse_weighted_prompts(text: str) -> dict:

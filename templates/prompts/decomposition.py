@@ -4,20 +4,6 @@ def create_decomposition_prompt(
     user_requirements: list[str],
     additional_context: str,
 ) -> str:
-    """
-    Creates a prompt that instructs an LLM to decompose a complex question into weighted sub-questions.
-    The prompt guides the LLM to either return a single 100% weighted prompt for simple questions,
-    or break complex questions into multiple weighted prompts that sum to 100%.
-
-    Parameters:
-        user_document_format (str): The type of document being analyzed (e.g. "resumes")
-        user_question (str): The main question to decompose
-        user_requirements (list[str]): List of specific requirements or constraints
-        additional_context (str): Any additional context needed for evaluation
-
-    Returns:
-        str: A formatted prompt string that will elicit weighted sub-questions from an LLM
-    """
     requirements_bullets = "\n".join(f"- {req}" for req in user_requirements)
     additional_context = additional_context or "none"
 

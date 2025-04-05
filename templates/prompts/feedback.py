@@ -1,14 +1,4 @@
 def create_feedback_prompt(current_plan: str, feedback: str) -> str:
-    """
-    Creates a prompt for updating a rubric based on user feedback.
-    
-    Parameters:
-        current_plan (str): The current rubric structure
-        feedback (str): User feedback about how to modify the rubric
-        
-    Returns:
-        str: A formatted prompt string that will elicit an updated rubric from an LLM
-    """
     return f"""
 You are given a rubric structured as a tree along with user feedback. Update the rubric based on the following instructions:
 1. Feel free to modify the rubric prompts to better align with the user feedback.

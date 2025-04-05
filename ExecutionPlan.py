@@ -15,7 +15,7 @@ import asyncio
 from pathlib import Path
 
 
-from LLMAgent import LLMAgent
+from llm_agent import AzureLLMAgent
 from tqdm import tqdm
 from templates.prompts import create_scoring_prompt, create_feedback_prompt
 
@@ -117,7 +117,7 @@ class ExecutionPlan:
 
         return leaf_nodes
 
-    async def execute_plan(self, model="gpt-4o-mini"):
+    async def execute_plan(self, model="gpt-4"):
         # Create a task for each document.
         tasks = [
             asyncio.create_task(self._execute_plan_on_document(document, model))
@@ -134,8 +134,8 @@ class ExecutionPlan:
         # TODO: need a way to sepecify the prior for the return distribution dynamically.
         async def process_leaf(leaf_node):
             prompt = create_scoring_prompt(leaf_node, document)
-            # Ensure that LLMAgent.ask is asynchronous
-            return float(await LLMAgent(model=model).ask_async(prompt))
+            async with AzureLLMAgent(model=model) as agent:
+                return float(await agent.ask(prompt))
 
         # Create a list of tasks for all leaf nodes.
         tasks = [
@@ -151,7 +151,7 @@ class ExecutionPlan:
         return results
     
 
-    def modify_plan_through_user_feedback(self, feedback: str, model: str = "o3-mini"):
+    async def modify_plan_through_user_feedback(self, feedback: str, model: str = "gpt-4"):
         """
         Updates the execution plan based on user feedback.
 
@@ -162,21 +162,21 @@ class ExecutionPlan:
             Exception: If both attempts to generate a valid rubric fail
         """
         prompt = create_feedback_prompt(ExecutionPlan.plan_to_string(self.plan), feedback)
-        agent = LLMAgent(model=model)
-        result = agent.ask(prompt)
-        n_attempts = 3
-        while n_attempts:
-            try:
-                self.plan = self._parse_plan(result)
-                self.leaf_nodes = self.extract_leaf_nodes()
-                print(f"Attempt {n_attempts} succeeded")
-                break
-            except Exception as e:
-                result = agent.ask(" The error was: {e}. The format is not right or the weight does not add up to 1.0, re-attempt. Note: return only the final output, with no annotations")
-                n_attempts -= 1
-                print(result)
-                if n_attempts == 0:
-                    raise Exception("Failed to parse plan after 5 attempts")
+        async with AzureLLMAgent(model=model) as agent:
+            result = await agent.ask(prompt)
+            n_attempts = 3
+            while n_attempts:
+                try:
+                    self.plan = self._parse_plan(result)
+                    self.leaf_nodes = self.extract_leaf_nodes()
+                    print(f"Attempt {n_attempts} succeeded")
+                    break
+                except Exception as e:
+                    result = await agent.ask(" The error was: {e}. The format is not right or the weight does not add up to 1.0, re-attempt. Note: return only the final output, with no annotations")
+                    n_attempts -= 1
+                    print(result)
+                    if n_attempts == 0:
+                        raise Exception("Failed to parse plan after 5 attempts")
 
     @staticmethod
     def plan_to_string(tree, parent_weight=1, indent=""):
