@@ -63,3 +63,18 @@ def generate_plan():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+"""
+curl -X POST http://localhost:5000/generate-plan \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user_doc_format": "candidate resumes",
+    "user_question": "We want to score resumes for this job posting",
+    "user_requirements": [
+      "Avoid choosing people who are overqualified or would expect too high of a salary (of ~60K CAD). This requirement is very important and should be weighed heavily.",
+      "Assign a score from 1 to 100 (with a mean of 75 and a standard deviation of 10)."
+    ],
+    "additional_context": "The role is for a Customer Success Expert position requiring strong relationship building skills, bilingual (English/French) communication abilities, and willingness to travel for RV shows.",
+    "max_depth": 1
+  }'
+"""

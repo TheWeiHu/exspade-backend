@@ -7,7 +7,7 @@ import asyncio
 import re
 
 from ExecutionPlan import ExecutionPlan
-from llm_agent import AzureLLMAgent
+from llm_agent import AzureOpenAIAgent
 from templates.prompts import create_decomposition_prompt
 
 
@@ -36,7 +36,7 @@ class ExecutionPlanGenerator:
         self.additional_context = additional_context
         self.max_depth = max_depth
 
-    async def process(self, model="gpt-4", depth=0):
+    async def process(self, model="gpt-4o", depth=0):
         """
         Processes the prompt by calling generate_weighted_prompts with the current parameters,
         extracts the keys from the output, and recursively processes each key as a new question.
@@ -87,7 +87,7 @@ class ExecutionPlanGenerator:
 
 
 async def generate_weighted_prompts(
-    user_document_format, user_question, user_requirements, additional_context, model="gpt-4"
+    user_document_format, user_question, user_requirements, additional_context, model="gpt-4o"
 ):
     """
     Generates a dictionary mapping evaluation prompts to their weights by querying an LLM.
@@ -111,7 +111,7 @@ async def generate_weighted_prompts(
         user_document_format, user_question, user_requirements, additional_context
     )
 
-    async with AzureLLMAgent(model=model) as agent:
+    async with AzureOpenAIAgent(model=model) as agent:
         weights = await agent.ask(prompt)
 
         n_attempts = 3
@@ -180,11 +180,16 @@ async def main():
         user_input["user_question"],
         user_input["user_requirements"],
         user_input["additional_context"],
-        max_depth=1,
+        max_depth=3,
     )
     result = await gen.process()
     p = ExecutionPlan(result)
+ 
+    print("-" * 100)
+    print("Final Plan:")
     print(ExecutionPlan.plan_to_string(p.plan))
+    print("-" * 100)
+
 
 
 if __name__ == "__main__":

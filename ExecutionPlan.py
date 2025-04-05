@@ -15,7 +15,7 @@ import asyncio
 from pathlib import Path
 
 
-from llm_agent import AzureLLMAgent
+from llm_agent import AzureOpenAIAgent
 from tqdm import tqdm
 from templates.prompts import create_scoring_prompt, create_feedback_prompt
 
@@ -117,7 +117,7 @@ class ExecutionPlan:
 
         return leaf_nodes
 
-    async def execute_plan(self, model="gpt-4"):
+    async def execute_plan(self, model="gpt-4o"):
         # Create a task for each document.
         tasks = [
             asyncio.create_task(self._execute_plan_on_document(document, model))
@@ -134,7 +134,7 @@ class ExecutionPlan:
         # TODO: need a way to sepecify the prior for the return distribution dynamically.
         async def process_leaf(leaf_node):
             prompt = create_scoring_prompt(leaf_node, document)
-            async with AzureLLMAgent(model=model) as agent:
+            async with AzureOpenAIAgent(model=model) as agent:
                 return float(await agent.ask(prompt))
 
         # Create a list of tasks for all leaf nodes.
@@ -162,7 +162,7 @@ class ExecutionPlan:
             Exception: If both attempts to generate a valid rubric fail
         """
         prompt = create_feedback_prompt(ExecutionPlan.plan_to_string(self.plan), feedback)
-        async with AzureLLMAgent(model=model) as agent:
+        async with AzureOpenAIAgent(model=model) as agent:
             result = await agent.ask(prompt)
             n_attempts = 3
             while n_attempts:

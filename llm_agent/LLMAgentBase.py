@@ -19,7 +19,7 @@ class TokenUsage:
     cached: bool = False
 
 
-class BaseLLMAgent(ABC):
+class LLMAgentBase(ABC):
     """Base class for LLM agents with shared functionality"""
     
     def __init__(
@@ -37,6 +37,9 @@ class BaseLLMAgent(ABC):
         
         # Set up disk cache
         self.cache = diskcache.Cache(cache_dir, size_limit=cache_size_limit)
+
+        # Initialize conversation history
+        self.conversation_history: List[Dict[str, str]] = []
 
     def _generate_cache_key(self, prompt: str, messages: List[Dict[str, str]]) -> str:
         """Generate a unique cache key for the request"""
@@ -58,7 +61,7 @@ class BaseLLMAgent(ABC):
     async def _rate_limited_request(
         self, 
         prompt: str, 
-        messages: List[Dict[str, str]]
+        messages: Optional[List[Dict[str, str]]] = None
     ) -> Tuple[str, TokenUsage]:
         """Execute rate-limited request to LLM provider"""
         async with self.semaphore:
@@ -66,8 +69,16 @@ class BaseLLMAgent(ABC):
             await asyncio.sleep(60 / self.requests_per_minute)
             
             try:
-                all_messages = messages + [{"role": "user", "content": prompt}]
-                return await self._make_request(all_messages)
+                # Create the new user message
+                user_message = {"role": "user", "content": prompt}
+                
+                # Combine conversation history with any additional messages
+                current_messages = self.conversation_history.copy()
+                if messages is not None:
+                    current_messages.extend(messages)
+                current_messages.append(user_message)
+                
+                return await self._make_request(current_messages)
             except Exception as e:
                 print(f"Error in LLM request: {str(e)}")
                 raise
@@ -75,16 +86,18 @@ class BaseLLMAgent(ABC):
     async def ask(
         self,
         prompt: str,
-        messages: List[Dict[str, str]] = [],
-        bypass_cache: bool = False
+        messages: Optional[List[Dict[str, str]]] = None,
+        bypass_cache: bool = False,
+        clear_history: bool = False
     ) -> str:
         """
         Send a request to LLM with caching and rate limiting.
         
         Args:
             prompt: The prompt to send
-            messages: List of previous messages for context
+            messages: Optional list of previous messages for context
             bypass_cache: If True, skip cache lookup
+            clear_history: If True, clear conversation history before this request
             
         Returns:
             The model's response text
@@ -92,7 +105,19 @@ class BaseLLMAgent(ABC):
         if self.env == "dev":
             return ""
 
-        cache_key = self._generate_cache_key(prompt, messages)
+        if clear_history:
+            self.conversation_history = []
+
+        # Create the new user message
+        user_message = {"role": "user", "content": prompt}
+        
+        # Combine conversation history with any additional messages
+        current_messages = self.conversation_history.copy()
+        if messages is not None:
+            current_messages.extend(messages)
+        current_messages.append(user_message)
+
+        cache_key = self._generate_cache_key(prompt, current_messages)
 
         # Check cache first
         if not bypass_cache:
@@ -101,16 +126,31 @@ class BaseLLMAgent(ABC):
                 response_text, usage = cached_response
                 usage.cached = True
                 self.token_usage.append(usage)
+                # Add to conversation history even if cached
+                self.conversation_history.append(user_message)
+                self.conversation_history.append({"role": "assistant", "content": response_text})
                 return response_text
 
         # Get response from API with rate limiting
         response_text, usage = await self._rate_limited_request(prompt, messages)
+        
+        # Update conversation history
+        self.conversation_history.append(user_message)
+        self.conversation_history.append({"role": "assistant", "content": response_text})
         
         # Cache the response
         self.cache.set(cache_key, (response_text, usage))
         self.token_usage.append(usage)
         
         return response_text
+
+    def clear_history(self):
+        """Clear the conversation history"""
+        self.conversation_history = []
+
+    def get_history(self) -> List[Dict[str, str]]:
+        """Get the current conversation history"""
+        return self.conversation_history.copy()
 
     def get_token_usage_stats(self) -> Dict[str, Any]:
         """Get statistics about token usage and cache hits"""
